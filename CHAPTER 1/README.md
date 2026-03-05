@@ -104,7 +104,8 @@ cv.destroyAllWindows()   # 모든 창 닫기
 ```
 
 <실행 결과화면>
-<img width="1002" height="1032" alt="스크린샷 2026-03-05 153537" src="https://github.com/user-attachments/assets/10b7c0f6-7335-4ba0-ad6f-15d1be9840ac" />
+![Uploading 스크린샷 2026-03-05 161618.png…]()
+
 
 <핵심 기술 사용>
 cv.circle(img, (x, y), brush_size, color, -1) : 클릭한 위치에 원을 그려 준다.
