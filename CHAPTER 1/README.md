@@ -104,7 +104,8 @@ cv.destroyAllWindows()   # 모든 창 닫기
 ```
 
 <실행 결과화면>
-![Uploading 스크린샷 2026-03-05 161618.png…]()
+<img width="1436" height="980" alt="스크린샷 2026-03-05 161618" src="https://github.com/user-attachments/assets/0c158b3a-d5de-4a74-9649-931e01c6f169" />
+
 
 
 <핵심 기술 사용>
