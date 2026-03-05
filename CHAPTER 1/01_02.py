@@ -14,18 +14,21 @@ def paint(event, x, y, flags, param): # 마우스 이벤트에 따라 그리기 
         drawing = True                # 그리기 상태로 전환
         color = (255, 0, 0)           # 좌클릭: 파란색
         cv.circle(img, (x, y), brush_size, color, -1) # 클릭한 위치에 원 그리기
+
     elif event == cv.EVENT_RBUTTONDOWN:    # 우클릭 시작: 그리기 시작
         drawing = True                     # 그리기 상태로 전환
         color = (0, 0, 255)                # 우클릭: 빨간색
         cv.circle(img, (x, y), brush_size, color, -1) # 클릭한 위치에 원 그리기
+
     elif event == cv.EVENT_MOUSEMOVE:        # 마우스 이동: 드래그 중이면 계속 그리기
         if drawing: # 드래그로 연속 그리기 
             cv.circle(img, (x, y), brush_size, color, -1)
+
     elif event == cv.EVENT_LBUTTONUP or event == cv.EVENT_RBUTTONUP: # 클릭 종료: 그리기 중지
         drawing = False # 마우스를 떼면 그리기 중지
 
-# 1000x1000 크기의 흰색 캔버스(이미지) 생성
-img = np.ones((1000, 1000, 3), dtype=np.uint8) * 255
+# 이미지 생성
+img = cv.imread('soccer.jpg')
 cv.namedWindow('Painting') # 그리기 창 생성
 cv.setMouseCallback('Painting', paint) # 마우스 콜백 함수 등록
 
