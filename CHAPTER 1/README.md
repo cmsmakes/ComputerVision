@@ -1,10 +1,12 @@
 # CHAPTER 1 과제 설명
 
-01_01.py (이미지 불러오기 및 그레이스케일 변환)
-OpenCV를 사용하여 이미지를 불러오고 화면에 출력 -> 원본 이미지와 그레이스케일로 변환된 이미지를 하나의 창으로 나란히 표시
+## 🚀01_01.py (이미지 불러오기 및 그레이스케일 변환)
+### OpenCV를 사용하여 이미지를 불러오고 화면에 출력 -> 원본 이미지와 그레이스케일로 변환된 이미지를 하나의 창으로 나란히 표시
 
-<전체코드>
+**전체코드**
+
 ``` python
+
 import cv2 as cv
 import numpy as np
 
@@ -34,20 +36,24 @@ cv.waitKey(0) # 키 입력 대기
 cv.destroyAllWindows() # 모든 창 닫기
 
 ```
-<실행 결과화면>
+
+**실행 결과**
 <img width="1436" height="506" alt="스크린샷 2026-03-05 153442" src="https://github.com/user-attachments/assets/454839df-f02b-46d5-8590-822429a299a3" />
 
-<핵심 기술 사용>
+**💡 핵심 기술 요약**
+
 gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY) : 이미지를 그레이스케일로 변환하는 코드이다.
-result = np.hstack((img, gray_3ch))  : 원본 이미지와 그레이스케일 이미지를 가로로 연결
+
+result = np.hstack((img, gray_3ch)) : 원본 이미지와 그레이스케일 이미지를 가로로 연결
+
 gray_3ch = cv.cvtColor(gray, cv.COLOR_GRAY2BGR) : 가로로 연결(np.hstack)하기 위해 그레이스케일 이미지를 3채널로 임시 변환해야한다 ( 이 코드가 없을 시 오류 발생을 한다 )
 
 ---
 
-01_02.py ( 페인팅 붓 크기 조절 기능 추가 )
-마우스 입력으로 이미지 위에 붓질이 가능하며 좌클릭시 파란색이 나오며, 우클릭시 빨간색이 나오도록 하였으며 드래그로 연속 그리기도 가능하다. 붓 크기 조절은 "+" 키를 누르게 되면 붓 크기가 커지고, "-" 키를 누르게 되면 붓 크기가 작아지며 붓 크기는 최소 1, 최대 15로 제한을 하였다. 실행창 종료는 "q"로 종료를 하도록 만들었다.
+## 🚀01_02.py ( 페인팅 붓 크기 조절 기능 추가 )
+### 마우스 입력으로 이미지 위에 붓질이 가능하며 좌클릭시 파란색이 나오며, 우클릭시 빨간색이 나오도록 하였으며 드래그로 연속 그리기도 가능하다. 붓 크기 조절은 "+" 키를 누르게 되면 붓 크기가 커지고, "-" 키를 누르게 되면 붓 크기가 작아지며 붓 크기는 최소 1, 최대 15로 제한을 하였다. 실행창 종료는 "q"로 종료를 하도록 만들었다.
 
-<전체코드>
+**전체코드**
 ```python
 
 import cv2 as cv
@@ -103,26 +109,33 @@ cv.destroyAllWindows()   # 모든 창 닫기
 
 ```
 
-<실행 결과화면>
+**실행 결과화면**
 <img width="1436" height="980" alt="스크린샷 2026-03-05 161618" src="https://github.com/user-attachments/assets/0c158b3a-d5de-4a74-9649-931e01c6f169" />
 
 
 
-<핵심 기술 사용>
+**💡 핵심 기술 요약**
+
 cv.circle(img, (x, y), brush_size, color, -1) : 클릭한 위치에 원을 그려 준다.
+
 cv.setMouseCallback('Painting', paint) : 모든 마우스 이벤트를 이 콜백함수를 통해 처리를 해준다.
+
 event == cv.EVENT_LBUTTONDOWN : 좌 클릭 시작
+
 event == cv.EVENT_RBUTTONDOWN : 우 클릭 시작
+
 event == cv.EVENT_MOUSEMOVE : 마우스 이동( 드래그 중 계속 그리기 )
+
 event == cv.EVENT_LBUTTONUP or event == cv.EVENT_RBUTTONUP : 클릭 종료( 그리기 종료 )
+
 key = cv.waitKey(1) & 0xFF : 루프 안에서 키보드 입력 처리
 
 ---
 
-01_03.py ( 마우스로 영역 선택 및 ROI(관심영역) 추출 )
-이미지를 불러오고 사용자가 마우스로 클릭하고 드래그하여 관심영역(ROI)을 선택하여 선택한 영역만 따로 저장하거나 표시를 할 수 있게 한다.
+## 🚀01_03.py ( 마우스로 영역 선택 및 ROI(관심영역) 추출 )
+### 이미지를 불러오고 사용자가 마우스로 클릭하고 드래그하여 관심영역(ROI)을 선택하여 선택한 영역만 따로 저장하거나 표시를 할 수 있게 한다.
 
-<전체코드>
+**전체코드**
 ```python
 
 import cv2 as cv
@@ -195,11 +208,15 @@ cv.destroyAllWindows()          # 모든 창 닫기
 
 ```
 
-<실행 결과화면>
+**실행 결과화면**
 <img width="1442" height="992" alt="스크린샷 2026-03-05 153610" src="https://github.com/user-attachments/assets/cde4acaa-a34a-4f86-a5fa-6d42ecd04e72" />
 
-<핵심 기술 사용>
+**💡 핵심 기술 요약**
+
 cv.setMouseCallback('ROI Selection', select_roi) : 'ROI Selection'이라는 창에서 발생하는 모든 마우스 이벤트(클릭, 이동, 떼기 등)를 사용자가 정의한 select_roi 함수로 전달합니다. 이 줄이 없으면 마우스를 아무리 움직여도 프로그램은 반응하지 않습니다.
+
 roi = img[y1:y2, x1:x2] : 선택한 영역(ROI) 추출합니다
+
 temp_img = img.copy() 
+
 cv.rectangle(temp_img, (start_x, start_y), (x, y), (0, 255, 0), 2) : 드래그하는 동안 사각형이 실시간으로 그려지게 만드는 테크닉입니다. (복사를 하는 이유 : 원본 img에 직접 사각형을 그려버리면, 마우스를 움직일 때마다 이전 위치에 그려진 사각형 잔상이 지워지지 않고 계속 남기 때문입니다.)
