@@ -113,6 +113,7 @@ else:
 
 
 **💡 핵심 기술 요약**
+
 **`cv2.findChessboardCorners()`**: 이미지에서 2D 체크보드 코너 좌표를 검출합니다.
 
 **`cv2.calibrateCamera()`**: 실제 3D 좌표와 검출된 2D 이미지 좌표를 이용하여 카메라 내부 행렬(Camera matrix)과 왜곡 계수(Distortion Coefficients)를 계산합니다.
