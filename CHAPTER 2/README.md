@@ -404,6 +404,7 @@ cv2.destroyAllWindows()
   </tr>
 </table>
 
+<img width="370" height="138" alt="image" src="https://github.com/user-attachments/assets/73c8ede2-c743-4226-b340-6a44c6bdd726" />
 
 
 
