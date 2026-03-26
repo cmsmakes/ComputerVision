@@ -1,45 +1,47 @@
-## 🚀01.소벨 에지 검출 및 결과 시각화 (Sobel Edge Detection)
-### 이미지 내 픽셀 값의 변화량(기울기)을 통해 "경계선"의 기초 정보를 추출하는 것
+## 🚀01.SIFT를 이용한 특징점 검출 및 시각화
+### 이미지 내 SIFT(Scale-Invariant Feature Transform) 알고리즘을 사용하여 특징점을 검출하고 시각화하기
 
-### 핵심 윈리 : 이미지의 가로와 세로 방향으로 미분을 수행하여, 밝기가 급격하게 변하는 지점을 찾아낸다.
+### 핵심 윈리 : SIFT는 단순히 점을 찾는 것을 넘어, 이미지가 회전하거나 크기(Scale)가 변해도 동일한 지점을 찾아낼 수 있는 강력한 지역 특징(Local Feature) 추출 알고리즘입니다.
+1. 스케일 불변성 (Scale Invariance): 이미지를 다양한 크기(옥타브)로 만들고 점점 흐리게(Gaussian Blur) 하여, 멀리서 보든 가까이서 보든 상관없이 공통된 특징을 찾습니다.
+2. 회전 불변성 (Rotation Invariance): 특징점 주변의 밝기 변화(Gradient) 방향을 분석하여 가장 지배적인 방향을 '기준 방향'으로 설정합니다.
+3. 특징 기술자 (Descriptor): 각 특징점 주변의 정보를 128차원 벡터로 수치화하여, 다른 이미지의 특징점과 비교(매칭)할 수 있는 '지문'과 같은 데이터를 생성합니다.
 
 **전체코드**
 
 ``` python
 
 import cv2 as cv
-import numpy as np
-import matplotlib.pyplot as plt
+from matplotlib import pyplot as plt
 
-# 1. cv.imread()를 사용하여 이미지 불러오기
-img = cv.imread('edgeDetectionImage.jpg') 
+# 1. 이미지 불러오기 
+img = cv.imread('mot_color70.jpg')
+gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY) # 흑백 이미지 생성
 
-# 2. cv.cvtColor()를 사용하여 그레이스케일로 변환
-gray = cv.cvtColor(img, cv.COLOR_BGR2GRAY)
+# 2. SIFT 객체 생성 
+sift = cv.SIFT_create(nfeatures=5000)
 
-# 3. cv.Sobel()을 사용하여 x축과 y축 방향 에지 검출 
-# 1, 0은 x축 방향 미분, ksize=3은 3x3 크기의 소벨 커널을 사용함을 의미
-sobel_x = cv.Sobel(gray, cv.CV_64F, 1, 0, ksize=3)
-# 0, 1은 y축 방향 미분을 의미
-sobel_y = cv.Sobel(gray, cv.CV_64F, 0, 1, ksize=3)
+# 3. 특징점(Keypoints) 검출 
+keypoints, descriptors = sift.detectAndCompute(gray, None)
 
-# 4. cv.magnitude()를 사용하여 x축과 y축 에지 강도를 합산하여 전체 에지 강도 계산
-magnitude = cv.magnitude(sobel_x, sobel_y)
+# 4. 특징점 시각화 (배경을 흑백인 gray로 설정) 
+# 첫 번째 인자를 gray로 바꾸면 특징점은 컬러로, 배경은 흑백으로 나옵니다.
+img_with_keypoints = cv.drawKeypoints(gray, keypoints, None, 
+                                      flags=cv.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
 
-# 5. cv.convertScaleAbs()를 사용하여 8비트 정수 형식으로 변환
-sobel_magnitude = cv.convertScaleAbs(magnitude)
+# 5. 결과 출력 
+plt.figure(figsize=(12, 6))
 
-# 6. Matplotlib를 사용하여 시각화
-# 첫 번째 칸에 원본 이미지 출력
-plt.figure(figsize=(10, 5))
+# 왼쪽: 원본 컬러 이미지
 plt.subplot(1, 2, 1)
 plt.imshow(cv.cvtColor(img, cv.COLOR_BGR2RGB))
 plt.title('Original Image')
 plt.axis('off')
-# 두 번째 칸에 최종 에지 강도 이미지를 흑백(gray) 모드로 출력
+
+# 오른쪽: 흑백 배경 위의 특징점
 plt.subplot(1, 2, 2)
-plt.imshow(sobel_magnitude, cmap='gray') # cmap='gray' 사용
-plt.title('Sobel Edge Magnitude')
+# drawKeypoints의 결과는 항상 BGR 형태이므로 다시 RGB로 바꿔줍니다.
+plt.imshow(cv.cvtColor(img_with_keypoints, cv.COLOR_BGR2RGB))
+plt.title('SIFT Keypoints on Gray')
 plt.axis('off')
 
 plt.show()
@@ -48,149 +50,183 @@ plt.show()
 
 **실행 결과**
 
-<img width="802" height="248" alt="image" src="https://github.com/user-attachments/assets/b43d44d9-25fc-451f-b868-9a52ac41a5e9" />
+<img width="945" height="282" alt="image" src="https://github.com/user-attachments/assets/70d9b773-2eff-4d1a-aa48-107b38a1c543" />
+
+
 
 **💡 핵심 기술 요약**
 
-**`cv.Sobel(gray, cv.CV_64F, 1, 0, ksize=3)`**: x축 방향의 미분을 수행하여 수직 방향의 에지를 검출합니다.
+**`sift = cv.SIFT_create(nfeatures=5000)`**: SIFT 연산을 수행할 엔진을 만듭니다.
 
-**`cv.magnitude(sobel_x, sobel_y)`**: x, y 양방향의 에지 강도를 합산하여 전체 에지 세기를 계산합니다.
+**`keypoints, descriptors = sift.detectAndCompute(gray, None)`**: 가장 핵심적인 함수로, 이미지에서 특징점의 위치(keypoints)를 찾고, 그 지점의 고유한 수치 정보(descriptors)를 동시에 계산합니다.
 
-**`cv.convertScaleAbs(magnitude)`**: 계산된 미분 값을 가시화하기 위해 8비트(uint8) 이미지 형식으로 변환합니다.
+**`img_with_keypoints = cv.drawKeypoints(gray, keypoints, None, flags=cv.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)`**: DRAW_RICH_KEYPOINTS를 사용하면 단순한 점이 아니라, **원의 크기(Scale)**와 **원 안의 선(Orientation)**을 통해 SIFT가 파악한 기하학적 정보를 시각적으로 보여줍니다.
 
 ---
 
-## 🚀02.캐니 에지 및 허프 변환 ( Canny Edge & Hough Transfrom )
-### 파편화된 에지 픽셀들을 연결하여 수학적으로 의미 있는 "직선" 성분을 찾아내는 것
+## 🚀02.SIFT를 이용한 두 영상 간 특징점 매칭
+### 두 이미지를 입력받아 SIFT 특징점 기반으로 매칭을 수행하고 결과를 시각화
 
-### 핵심 윈리 : Canny : 1. 소벨보다 정교하게 노이즈를 제거하고 가느다란 에지만 남깁니다.  2. Hough Transform : 같은 선상에 놓인 점들을 분석하여 직선의 시작점과 끝점 좌표를 계
+### 핵심 윈리 : 같은 물체의 같은 곳을 쌍으로 맺는 일
+1. 변환 불변성: 물체가 이동, 회전하거나 크기(Scale)가 변해도 동일한 지점을 찾아내어 연결할 수 있어야 합니다.
+2. 분별력: 물체의 다른 곳에서 추출된 특징과는 두드러지게 달라야 엉뚱한 곳과 매칭되지 않습니다.
+3. 거리 계산: 특징 기술자(Descriptor) 사이의 거리를 계산하여 값이 작을수록 서로 같은 특징점으로 판단합니다.
 
 
 **전체코드**
 ```python
 
-import cv2
-import numpy as np
+import cv2 as cv
+import matplotlib.pyplot as plt
 
-# 1. 이미지 불러오기 (테스트할 이미지 경로를 입력해주세요)
-img = cv2.imread('rose.png') # 강의 자료의 장미 이미지와 같은 테스트용 이미지
+# 1. 이미지 불러오기 
+img1 = cv.imread('mot_color70.jpg')
+img2 = cv.imread('mot_color80.jpg')
 
-if img is None:
-    print("이미지를 불러올 수 없습니다. 경로를 확인해주세요.")
+# 이미지를 정상적으로 읽었는지 확인
+if img1 is None or img2 is None:
+    print("이미지 파일을 찾을 수 없습니다. 경로를 확인해주세요.")
 else:
-    # 이미지의 높이(h)와 너비(w) 가져오기
-    h, w = img.shape[:2]
+    # 2. SIFT 객체 생성 및 특징점 추출 
+    sift = cv.SIFT_create()
+    kp1, des1 = sift.detectAndCompute(img1, None)
+    kp2, des2 = sift.detectAndCompute(img2, None)
 
-    # 2. 이미지의 중심 좌표 계산
-    center = (w / 2, h / 2)
+    # 3. BFMatcher 객체 생성 (L2 거리 사용 및 crossCheck 활성화) 
+    bf = cv.BFMatcher(cv.NORM_L2, crossCheck=True)
 
-    # 3. 회전 및 크기 조절 행렬 생성
-    # 중심 좌표 기준으로 +30도 회전, 크기는 0.8배
-    # cv2.getRotationMatrix2D() 사용
-    M = cv2.getRotationMatrix2D(center, angle=30, scale=0.8)
+    # 4. 특징점 매칭 수행 
+    matches = bf.match(des1, des2)
 
-    # 4. 평행이동 적용
-    # 회전 행렬의 마지막 열(index 2) 값을 조정하여 평행이동 반영
-    # x축 방향으로 +80px
-    M[0, 2] += 80
-    # y축 방향으로 -40px
-    M[1, 2] -= 40
+    # 매칭 결과를 거리 순으로 정렬 (거리가 짧을수록 유사도가 높음)
+    matches = sorted(matches, key=lambda x: x.distance)
 
-    # 5. 변환 적용 (cv2.warpAffine 사용)
-    # 이미지에 생성한 변환 행렬 M을 적용
-    result = cv2.warpAffine(img, M, (w, h))
+    # 5. 매칭 결과 시각화 
+    # 상위 500개의 매칭점만 표시
+    res = cv.drawMatches(img1, kp1, img2, kp2, matches[:500], None, 
+                         flags=cv.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
 
-    # 6. 결과 시각화
-    # 원본 이미지와 변환된 이미지를 나란히 출력
-    cv2.imshow('Original', img)
-    cv2.imshow('Rotated + Scaled + Translated', result)
-    
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
+    # 6. Matplotlib을 이용한 결과 출력 
+    plt.figure(figsize=(12, 6))
+    plt.imshow(cv.cvtColor(res, cv.COLOR_BGR2RGB))
+    plt.title('SIFT Feature Matching (Top 500 Matches)')
+    plt.axis('off')
+    plt.show()
 
 ```
 
 **실행 결과화면**
 
-<img width="825" height="319" alt="image" src="https://github.com/user-attachments/assets/22f62834-c687-4030-b0c3-8ef20c37ea64" />
+<img width="973" height="321" alt="image" src="https://github.com/user-attachments/assets/bc82e31d-dfd8-4d7f-b215-7ab28cefe686" />
+
 
 
 **💡 핵심 기술 요약**
 
-**`cv.Canny(img, 100, 200)`**: 노이즈를 제거하고 가장 선명한 에지만 남겨 이진 에지 맵을 생성합니다.
+**`kp1, des1 = sift.detectAndCompute(img1, None)`**: 각 특징점 주변의 16x16 영역을 4x4 블록으로 나누어 128차원 벡터를 생성합니다. 그리고 영상의 한 지점을 고유하게 식별할 수 있는 **'지문'**과 같은 데이터를 만드는 단계입니다.
 
-**`cv.HoughLinesP(edges, 1, np.pi/180, threshold, ...)`**: 확률적 허프 변환을 통해 에지 점들을 연결하여 직선의 시작점과 끝점 좌표를 찾아냅니다.
+**`bf = cv.BFMatcher(cv.NORM_L2, crossCheck=True)`**: crossCheck=True: 서로가 서로에게 최선의 매칭일 때만 남기는 기능으로, 매칭의 정확도를 높여줍니다.
 
-**`cv.line(img, pt1, pt2, (0, 0, 255), 2)`**: 검출된 좌표 데이터를 바탕으로 원본 이미지 위에 빨간색 선을 그려 시각화합니다.
+**`matches = sorted(matches, key=lambda x: x.distance)`**: 거리가 짧을수록 두 지점의 유사도가 높다는 것을 의미하며, 상위 결과만 선택하여 **이상치(Outlier)**를 줄일 수 있습니다.
+
+**`res = cv.drawMatches(img1, kp1, img2, kp2, matches[:500], ...)`** : 두 영상을 가로로 붙이고 대응되는 특징점들을 선으로 연결하여 보여줍니다.
 
 ---
 
-## 🚀03.GrabCut을 이용한 영역 분할 ( Interactive Segmentation )
-### 사용자의 힌트(사각형 영역)를 바탕으로 배경과 전경(객체)을 완젼히 분리하는 것
+## 🚀03.호모그래피를 이용한 이미지 정합 (Image Alignment)
+###  SIFT 특징점을 사용하여 두 이미지 간 대응점을 찾고, 이를 바탕으로 호모그래피를 계산하여 하나의 이미지 위에 정렬
 
-### 핵심 원리 : 그랩 컷(GrabCut) 알고리즘을 사용하여 이미지 내의 픽셀들을 "배경일 확률" 과 "객체일 확률"로 나누어 최적의 경계를 찾음
+### 핵심 원리 : 서로 다른 각도에서 찍은 두 평면 사이의 투시 변환(Perspective Transformation) 관계를 계산하는 것
+1. 호모그래피(Homography): 한 평면을 다른 평면으로 투영시킬 때 사용하는 $3 \times 3$ 행렬입니다. 최소 4쌍의 대응점이 있으면 계산이 가능합니다.
+2. Ratio Test: 1등 매칭 거리와 2등 매칭 거리의 비율을 계산하여(예: 0.7 미만), 모호한 매칭을 사전에 제거함으로써 정확도를 높입니다.
+3. RANSAC (Random Sample Consensus): 무작위로 샘플을 뽑아 모델을 만든 후 검증하는 과정을 반복하여, 잘못 매칭된 점(Outlier)들을 배제하고 가장 신뢰도 높은 변환 행렬을 찾아냅니다.
 
 **전체코드**
 ```python
 
 import cv2 as cv
 import numpy as np
-import matplotlib.pyplot as plt
+from matplotlib import pyplot as plt
 
-# 1. 이미지 불러오기
-img = cv.imread('coffee cup.JPG')
-# 이미지와 동일한 크기의 마스크(0으로 초기화)를 생성
-mask = np.zeros(img.shape[:2], np.uint8)
+# 1. 이미지 불러오기 
+img1 = cv.imread('img1.jpg') 
+img2 = cv.imread('img2.jpg') 
 
-# GrabCut 알고리즘 내부 연산에서 사용할 배경(bgd) 및 전경(fgd) 임시 모델을 초기화
-bgdModel = np.zeros((1, 65), np.float64)
-fgdModel = np.zeros((1, 65), np.float64)
+# 2. SIFT 특징점 검출 
+sift = cv.SIFT_create()
+kp1, des1 = sift.detectAndCompute(img1, None)
+kp2, des2 = sift.detectAndCompute(img2, None)
 
-# 3. 초기 사각형 영역 설정 (x, y, w, h)
-# 이미지 크기에 맞춰 적절히 조정이 필요합니다.
-rect = (50, 50, img.shape[1]-100, img.shape[0]-100)
+# 3. FLANN 매처 및 Ratio Test 적용 
+FLANN_INDEX_KDTREE = 1
+index_params = dict(algorithm=FLANN_INDEX_KDTREE, trees=5)
+search_params = dict(checks=50)
+flann = cv.FlannBasedMatcher(index_params, search_params)
+matches = flann.knnMatch(des1, des2, k=2)
 
-# 4. cv.grabCut() 수행 ( 전경과 배경을 분리 5회 반복 )
-# GC_INIT_WITH_RECT 옵션은 방금 설정한 사각형(rect) 정보를 초기값으로 쓴다는 의미
-cv.grabCut(img, mask, rect, bgdModel, fgdModel, 5, cv.GC_INIT_WITH_RECT)
+good_matches = [m for m, n in matches if m.distance < 0.7 * n.distance]
 
-# 5. 마스크 값을 확실한 배경 : 0 또는 애매한 배경 : 1로 변경
-# cv.GC_BGD(0), cv.GC_PR_BGD(2)는 0으로, 나머지는 1로 설정
-mask2 = np.where((mask == cv.GC_BGD) | (mask == cv.GC_PR_BGD), 0, 1).astype('uint8')
+if len(good_matches) > 10:
+    # --- 데이터 준비 1: 특징점 매칭 시각화 --- 
+    img_matches = cv.drawMatches(img1, kp1, img2, kp2, good_matches[:50], None, 
+                                 flags=cv.DrawMatchesFlags_NOT_DRAW_SINGLE_POINTS)
+    img_matches_rgb = cv.cvtColor(img_matches, cv.COLOR_BGR2RGB)
 
-# 6. 원본 이미지에 마스크를 곱하여 배경 제거
-result = img * mask2[:, :, np.newaxis]
+    # --- 데이터 준비 2: 이미지 정합 (Panorama) ---
+    src_pts = np.float32([kp2[m.trainIdx].pt for m in good_matches]).reshape(-1, 1, 2)
+    dst_pts = np.float32([kp1[m.queryIdx].pt for m in good_matches]).reshape(-1, 1, 2)
+    
+    # 호모그래피 계산 
+    H, mask = cv.findHomography(src_pts, dst_pts, cv.RANSAC, 5.0)
 
-# 7. 시각화 (원본, 마스크, 결과)
-plt.figure(figsize=(15, 5))
-plt.subplot(1, 3, 1)
-plt.imshow(cv.cvtColor(img, cv.COLOR_BGR2RGB))
-plt.title('Original')
+    h1, w1 = img1.shape[:2]
+    h2, w2 = img2.shape[:2]
 
-plt.subplot(1, 3, 2)
-plt.imshow(mask2, cmap='gray')
-plt.title('Mask')
+    # 이미지 변환 및 합성 
+    warped_img = cv.warpPerspective(img2, H, (w1 + w2, max(h1, h2)))
+    result = warped_img.copy()
+    result[0:h1, 0:w1] = img1
+    result_rgb = cv.cvtColor(result, cv.COLOR_BGR2RGB)
 
-plt.subplot(1, 3, 3)
-plt.imshow(cv.cvtColor(result, cv.COLOR_BGR2RGB))
-plt.title('Foreground Extraction')
+    # --- 최종 출력: 하나의 Figure에 두 Plot 배치 --- 
+    plt.figure(figsize=(12, 10)) # 전체 창 크기 설정
 
-plt.show()
+    # 첫 번째 칸 (위): 매칭 결과
+    plt.subplot(2, 1, 1) # 2행 1열 중 1번째
+    plt.imshow(img_matches_rgb)
+    plt.title('Step 1: Feature Matching (Correspondences)')
+    plt.axis('off')
+
+    # 두 번째 칸 (아래): 정합 결과
+    plt.subplot(2, 1, 2) # 2행 1열 중 2번째
+    plt.imshow(result_rgb)
+    plt.title('Step 2: Final Stitched Panorama')
+    plt.axis('off')
+
+    plt.tight_layout() # 이미지 간 간격 자동 조정
+    plt.show()
+
+else:
+    print("충분한 매칭점을 찾지 못했습니다.")
 
 ```
 
 **실행 결과화면**
 
 
-<img width="1248" height="350" alt="image" src="https://github.com/user-attachments/assets/36e24c41-555f-46fe-93cb-9869191df306" />
+<img width="1168" height="918" alt="image" src="https://github.com/user-attachments/assets/2cf04a69-96c9-4b0c-85c6-5159f2ec16df" />
+
 
 
 
 **💡 핵심 기술 요약**
 
-**`cv.grabCut(img, mask, rect, bgdModel, fgdModel, 5, cv.GC_INIT_WITH_RECT)`**: 사각형(rect) 정보를 초기값으로 사용하여 전경과 배경을 반복적으로 분리합니다.
+**`flann = cv.FlannBasedMatcher(index_params, search_params)
+matches = flann.knnMatch(des1, des2, k=2)
+good_matches = [m for m, n in matches if m.distance < 0.7 * n.distance]`**: 수만 개의 특징점을 빠르게 매칭하기 위해 KD-Tree 구조를 사용하는 FLANN 라이브러리를 활용합니다. 그리고 0.7이라는 임계값을 사용한 Ratio Test를 통해 매칭의 품질을 보장합니다
 
-**`np.where((mask == 0) | (mask == 2), 0, 1)`**: GrabCut 결과 마스크에서 배경 관련 값(0, 2)은 제거하고, 객체 관련 값(1, 3)만 남겨 이진 마스크를 만듭니다.
+**`H, mask = cv.findHomography(src_pts, dst_pts, cv.RANSAC, 5.0)`**: cv.RANSAC 플래그를 통해 잘못된 대응점(Outlier)이 섞여 있어도 강인하게(Robust) 올바른 행렬을 찾아냅니다.
 
-**`img * mask[:, :, np.newaxis]`**: 원본 이미지와 이진 마스크를 곱하여 배경을 검은색으로 지우고 객체만 추출합니다.
+**`warped_img = cv.warpPerspective(img2, H, (w1 + w2, max(h1, h2)))
+result[0:h1, 0:w1] = img1`**: 계산된 호모그래피 행렬 H를 이용하여 img2를 img1의 좌표계로 찌그러뜨려 변환합니다.
 
